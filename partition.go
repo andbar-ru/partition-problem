@@ -104,7 +104,6 @@ func FindPartitionDynamic(arr []int) bool {
 // Greedy makes an attempt to partition arr into two sets of equal or closest sum.
 func Greedy(arr []int) ([]int, []int) {
 	sort.Sort(sort.Reverse(sort.IntSlice(arr)))
-	fmt.Printf("%v: ", arr)
 	set1 := make([]int, 0, len(arr))
 	set2 := make([]int, 0, len(arr))
 	var sum1, sum2 int
@@ -121,8 +120,13 @@ func Greedy(arr []int) ([]int, []int) {
 	return set1, set2
 }
 
-// findSets finds the sets of the array which have equal sum.
-func findSets(arr []int, set1, set2 *[]int, sum1, sum2, pos int) bool {
+// FindSets finds the sets of the array which have equal sum.
+func FindSets(arr []int, set1, set2 *[]int, sum1, sum2, pos int) bool {
+	// If sum of entire arr is odd then array cannot be partitioned. Check only once.
+	if pos == 0 && sumInt(arr)%2 != 0 {
+		return false
+	}
+
 	// If entire array is traversed, compare both the sums.
 	if pos == len(arr) {
 		// If sums are equal print both sets and return true to show sets are found.
@@ -139,7 +143,7 @@ func findSets(arr []int, set1, set2 *[]int, sum1, sum2, pos int) bool {
 	*set1 = append(*set1, arr[pos])
 
 	// Recursive call after adding current element to set1.
-	res := findSets(arr, set1, set2, sum1+arr[pos], sum2, pos+1)
+	res := FindSets(arr, set1, set2, sum1+arr[pos], sum2, pos+1)
 
 	// If this inclusion results in equal sum sets partition then return true to show desired sets are found.
 	if res {
@@ -151,18 +155,5 @@ func findSets(arr []int, set1, set2 *[]int, sum1, sum2, pos int) bool {
 	*set2 = append(*set2, arr[pos])
 
 	// Recursive call after including current element to set2.
-	return findSets(arr, set1, set2, sum1, sum2+arr[pos], pos+1)
-}
-
-// isPartitionPoss returns true if array arr can be partitioned into two equal sum sets or not.
-func isPartitionPoss(arr []int, set1, set2 *[]int) bool {
-	sum := sumInt(arr)
-
-	// If sum is odd then array cannot be partitioned.
-	if sum%2 != 0 {
-		return false
-	}
-
-	// Find both the sets.
-	return findSets(arr, set1, set2, 0, 0, 0)
+	return FindSets(arr, set1, set2, sum1, sum2+arr[pos], pos+1)
 }
