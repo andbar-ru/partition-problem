@@ -68,6 +68,19 @@ func TestGreedy(t *testing.T) {
 		sum1 := sumInt(set1)
 		sum2 := sumInt(set2)
 		results[sum1 == sum2]++
+		// Greedy approach must give 7/6-approximation: https://en.wikipedia.org/wiki/Partition_problem#The_greedy_algorithm
+		if sum1 != sum2 {
+			var maxSum int
+			if sum1 > sum2 {
+				maxSum = sum1
+			} else {
+				maxSum = sum2
+			}
+			averageSum := (sum1 + sum2) / 2
+			if float64(maxSum)/float64(averageSum) > 7.0/6.0 {
+				t.Errorf("Wrong partition of array %v on %v and %v by greedy algorythm. Sums %v %v have too big difference (maxSum = %v, average sum = %v).", array, set1, set2, sum1, sum2, maxSum, averageSum)
+			}
+		}
 	}
 
 	if results[true] != 15 || results[false] != 41 {
@@ -75,4 +88,31 @@ func TestGreedy(t *testing.T) {
 	}
 
 	fmt.Printf("%v\n\n", results)
+}
+
+func TestFindSets(t *testing.T) {
+	// results := map[bool]int{true: 0, false: 0}
+
+	set1 := make([]int, 0, 12)
+	set2 := make([]int, 0, 12)
+	array := []int{4, 8, 7, 6, 5}
+	res := FindSets(array, &set1, &set2, 0, 0, 0)
+	fmt.Println(res)
+
+	// for _, array := range arrays[:1] {
+	// 	set1 := make([]int, 0, 12)
+	// 	set2 := make([]int, 0, 12)
+	// 	res := FindSets(array[:], &set1, &set2, 0, 0, 0)
+	// 	results[res]++
+	//
+	// 	// if res {
+	// 	// 	fmt.Printf("%v %v\n", set1, set2)
+	// 	// 	fmt.Printf("%d %d\n", len(set1), len(set2))
+	// 	// 	fmt.Println()
+	// 	// }
+	// }
+
+	// if results[true] != 56 || results[false] != 44 {
+	// 	t.Errorf("Wrong results: expected 56 partitionable arrays and 44 unpartitionable, but got %d and %d respectively.", results[true], results[false])
+	// }
 }

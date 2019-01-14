@@ -122,6 +122,7 @@ func Greedy(arr []int) ([]int, []int) {
 
 // FindSets finds the sets of the array which have equal sum.
 func FindSets(arr []int, set1, set2 *[]int, sum1, sum2, pos int) bool {
+	fmt.Printf("%v %v %v %v %v\n", *set1, *set2, sum1, sum2, pos)
 	// If sum of entire arr is odd then array cannot be partitioned. Check only once.
 	if pos == 0 && sumInt(arr)%2 != 0 {
 		return false
@@ -131,7 +132,6 @@ func FindSets(arr []int, set1, set2 *[]int, sum1, sum2, pos int) bool {
 	if pos == len(arr) {
 		// If sums are equal print both sets and return true to show sets are found.
 		if sum1 == sum2 {
-			fmt.Printf("%v %v: %v\n", set1, set2, sum1)
 			return true
 		} else {
 			// If sums are not equal then return sets are not found.
@@ -150,7 +150,7 @@ func FindSets(arr []int, set1, set2 *[]int, sum1, sum2, pos int) bool {
 		return res
 	}
 
-	// If not the backtrack by removing current element from set1 and include it in set2.
+	// If not then backtrack by removing current element from set1 and include it in set2.
 	*set1 = (*set1)[:len(*set1)-1]
 	*set2 = append(*set2, arr[pos])
 
