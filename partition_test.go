@@ -1,7 +1,6 @@
 package partition
 
 import (
-	"fmt"
 	"math/rand"
 	"os"
 	"testing"
@@ -86,33 +85,23 @@ func TestGreedy(t *testing.T) {
 	if results[true] != 15 || results[false] != 41 {
 		t.Errorf("Wrong results: expected 15 true and 41 false, but got %d and %d respectively.", results[true], results[false])
 	}
-
-	fmt.Printf("%v\n\n", results)
 }
 
 func TestFindSets(t *testing.T) {
-	// results := map[bool]int{true: 0, false: 0}
+	results := map[bool]int{true: 0, false: 0}
 
-	set1 := make([]int, 0, 12)
-	set2 := make([]int, 0, 12)
-	array := []int{4, 8, 7, 6, 5}
-	res := FindSets(array, &set1, &set2, 0, 0, 0)
-	fmt.Println(res)
+	for _, array := range arrays {
+		res, set1, set2 := FindSets(array[:])
+		results[res]++
 
-	// for _, array := range arrays[:1] {
-	// 	set1 := make([]int, 0, 12)
-	// 	set2 := make([]int, 0, 12)
-	// 	res := FindSets(array[:], &set1, &set2, 0, 0, 0)
-	// 	results[res]++
-	//
-	// 	// if res {
-	// 	// 	fmt.Printf("%v %v\n", set1, set2)
-	// 	// 	fmt.Printf("%d %d\n", len(set1), len(set2))
-	// 	// 	fmt.Println()
-	// 	// }
-	// }
+		if res {
+			if sumInt(set1) != sumInt(set2) {
+				t.Errorf("Wrong partition of array %v on %v and %v: sums are not equal (%v != %v)", array, set1, set2, sumInt(set1), sumInt(set2))
+			}
+		}
+	}
 
-	// if results[true] != 56 || results[false] != 44 {
-	// 	t.Errorf("Wrong results: expected 56 partitionable arrays and 44 unpartitionable, but got %d and %d respectively.", results[true], results[false])
-	// }
+	if results[true] != 56 || results[false] != 44 {
+		t.Errorf("Wrong results: expected 56 partitionable arrays and 44 unpartitionable, but got %d and %d respectively.", results[true], results[false])
+	}
 }

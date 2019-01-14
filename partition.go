@@ -6,7 +6,7 @@
 package partition
 
 import (
-	"fmt"
+	// "fmt"
 	"sort"
 )
 
@@ -120,40 +120,46 @@ func Greedy(arr []int) ([]int, []int) {
 	return set1, set2
 }
 
-// FindSets finds the sets of the array which have equal sum.
-func FindSets(arr []int, set1, set2 *[]int, sum1, sum2, pos int) bool {
-	fmt.Printf("%v %v %v %v %v\n", *set1, *set2, sum1, sum2, pos)
-	// If sum of entire arr is odd then array cannot be partitioned. Check only once.
-	if pos == 0 && sumInt(arr)%2 != 0 {
-		return false
-	}
-
+// findSets finds the sets of the array which have equal sum.
+func findSets(arr, set1, set2 []int, sum1, sum2, pos int) (bool, []int, []int) {
 	// If entire array is traversed, compare both the sums.
 	if pos == len(arr) {
 		// If sums are equal print both sets and return true to show sets are found.
 		if sum1 == sum2 {
-			return true
+			return true, set1, set2
 		} else {
 			// If sums are not equal then return sets are not found.
-			return false
+			return false, nil, nil
 		}
 	}
 
 	// Add current element to set1.
-	*set1 = append(*set1, arr[pos])
+	set1 = append(set1, arr[pos])
 
 	// Recursive call after adding current element to set1.
-	res := FindSets(arr, set1, set2, sum1+arr[pos], sum2, pos+1)
+	res, resSet1, resSet2 := findSets(arr, set1, set2, sum1+arr[pos], sum2, pos+1)
 
 	// If this inclusion results in equal sum sets partition then return true to show desired sets are found.
 	if res {
-		return res
+		return res, resSet1, resSet2
 	}
 
 	// If not then backtrack by removing current element from set1 and include it in set2.
-	*set1 = (*set1)[:len(*set1)-1]
-	*set2 = append(*set2, arr[pos])
+	set1 = set1[:len(set1)-1]
+	set2 = append(set2, arr[pos])
 
 	// Recursive call after including current element to set2.
-	return FindSets(arr, set1, set2, sum1, sum2+arr[pos], pos+1)
+	return findSets(arr, set1, set2, sum1, sum2+arr[pos], pos+1)
+}
+
+// FindSets finds the sets of the array which have equal sum.
+func FindSets(arr []int) (bool, []int, []int) {
+	// If sum of entire arr is odd then array cannot be partitioned.
+	if sumInt(arr)%2 != 0 {
+		return false, nil, nil
+	}
+
+	initialSet1 := make([]int, 0, len(arr))
+	initialSet2 := make([]int, 0, len(arr))
+	return findSets(arr, initialSet1, initialSet2, 0, 0, 0)
 }
