@@ -6,18 +6,25 @@ import (
 	"testing"
 )
 
+const (
+	arraysNumber = 1000
+	arraySize    = 12
+	maxInt       = 100
+	seed         = 42
+)
+
 var (
-	arrays                [100][12]int
-	partitionableArrays   [][12]int
-	unpartitionableArrays [][12]int
+	arrays                [arraysNumber][arraySize]int
+	partitionableArrays   [][arraySize]int
+	unpartitionableArrays [][arraySize]int
 )
 
 func TestMain(m *testing.M) {
-	rand.Seed(42) // The same sets every time
+	rand.Seed(seed) // The same sets every time
 
 	for i, array := range arrays {
 		for j := range array {
-			array[j] = rand.Intn(100)
+			array[j] = rand.Intn(maxInt)
 		}
 		arrays[i] = array
 	}
@@ -42,8 +49,8 @@ func findPartition(findPartitionFunc func([]int) bool) {
 func testFindPartition(t *testing.T, findPartitionFunc func([]int) bool) {
 	findPartition(findPartitionFunc)
 
-	if len(partitionableArrays) != 56 || len(unpartitionableArrays) != 44 {
-		t.Errorf("Wrong results: expected 56 partitionable arrays and 44 unpartitionable, but got %d and %d respectively.", len(partitionableArrays), len(unpartitionableArrays))
+	if len(partitionableArrays) != 502 || len(unpartitionableArrays) != 498 {
+		t.Errorf("Wrong results: expected 502 partitionable arrays and 498 unpartitionable, but got %d and %d respectively.", len(partitionableArrays), len(unpartitionableArrays))
 	}
 }
 
@@ -82,16 +89,16 @@ func TestGreedy(t *testing.T) {
 		}
 	}
 
-	if results[true] != 15 || results[false] != 41 {
-		t.Errorf("Wrong results: expected 15 true and 41 false, but got %d and %d respectively.", results[true], results[false])
+	if results[true] != 92 || results[false] != 410 {
+		t.Errorf("Wrong results: expected 92 true and 410 false, but got %d and %d respectively.", results[true], results[false])
 	}
 }
 
-func TestFindSets(t *testing.T) {
+func testFindSets(t *testing.T, findSetsFunc func([]int) (bool, []int, []int)) {
 	results := map[bool]int{true: 0, false: 0}
 
 	for _, array := range arrays {
-		res, set1, set2 := FindSets(array[:])
+		res, set1, set2 := findSetsFunc(array[:])
 		results[res]++
 
 		if res {
@@ -101,7 +108,15 @@ func TestFindSets(t *testing.T) {
 		}
 	}
 
-	if results[true] != 56 || results[false] != 44 {
-		t.Errorf("Wrong results: expected 56 partitionable arrays and 44 unpartitionable, but got %d and %d respectively.", results[true], results[false])
+	if results[true] != 502 || results[false] != 498 {
+		t.Errorf("Wrong results: expected 502 partitionable arrays and 498 unpartitionable, but got %d and %d respectively.", results[true], results[false])
 	}
+}
+
+func TestFindSetsRecursive(t *testing.T) {
+	testFindSets(t, FindSetsRecursive)
+}
+
+func TestFindSetsDynamic(t *testing.T) {
+	testFindSets(t, FindSetsDynamic)
 }

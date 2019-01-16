@@ -153,7 +153,7 @@ func findSets(arr, set1, set2 []int, sum1, sum2, pos int) (bool, []int, []int) {
 }
 
 // FindSets finds the sets of the array which have equal sum.
-func FindSets(arr []int) (bool, []int, []int) {
+func FindSetsRecursive(arr []int) (bool, []int, []int) {
 	// If sum of entire arr is odd then array cannot be partitioned.
 	if sumInt(arr)%2 != 0 {
 		return false, nil, nil
@@ -162,4 +162,76 @@ func FindSets(arr []int) (bool, []int, []int) {
 	initialSet1 := make([]int, 0, len(arr))
 	initialSet2 := make([]int, 0, len(arr))
 	return findSets(arr, initialSet1, initialSet2, 0, 0, 0)
+}
+
+// FindSetsDynamic tries to return equal sum sets of array.
+func FindSetsDynamic(arr []int) (bool, []int, []int) {
+	sumArray := sumInt(arr)
+	n := len(arr)
+
+	// Check sum is even or odd. If odd then array cannot be partitioned.
+	if sumArray&1 == 1 {
+		return false, nil, nil
+	}
+
+	// Divide sum by 2 to find sum of two possible subsets.
+	k := sumArray >> 1
+
+	// Boolean DP table to store result of states.
+	// dp[i][j] = true if there is a subset of elements in first i element of array that has sum equal to j.
+	dp := make([][]bool, n+1)
+	for i := range dp {
+		dp[i] = make([]bool, k+1)
+	}
+
+	// If number of elements are zero, then no sum can be obtained.
+	for i := 1; i <= k; i++ {
+		dp[0][i] = false
+	}
+
+	// Sum 0 can be obtained by not selecting any element.
+	for i := 0; i <= n; i++ {
+		dp[i][0] = true
+	}
+
+	// Fill the DP table in bottom up manner.
+	for i := 1; i <= n; i++ {
+		for currSum := 1; currSum <= k; currSum++ {
+			// Excluding current element.
+			dp[i][currSum] = dp[i-1][currSum]
+
+			// Including current element.
+			if arr[i-1] <= currSum {
+				dp[i][currSum] = dp[i][currSum] || dp[i-1][currSum-arr[i-1]]
+			}
+		}
+	}
+
+	// Required sets set1 and set2.
+	set1 := make([]int, n)
+	set2 := make([]int, n)
+
+	// If partition is not possible return false.
+	if !dp[n][k] {
+		return false, nil, nil
+	}
+
+	// Start from last element in dp table.
+	i := n
+	currSum := k
+
+	for i > 0 && currSum >= 0 {
+		// If current element does not contribute to k, then it belongs to set 2.
+		if dp[i-1][currSum] {
+			i--
+			set2 = append(set2, arr[i])
+		} else if dp[i-1][currSum-arr[i-1]] {
+			// If current element contribute to k then it belongs to set 1.
+			i--
+			currSum -= arr[i]
+			set1 = append(set1, arr[i])
+		}
+	}
+
+	return true, set1, set2
 }
