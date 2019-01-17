@@ -6,7 +6,7 @@
 package partition
 
 import (
-	// "fmt"
+	"fmt"
 	"sort"
 )
 
@@ -16,6 +16,14 @@ func sumInt(arr []int) int {
 		sum += val
 	}
 	return sum
+}
+
+func absInt(value int) int {
+	if value >= 0 {
+		return value
+	} else {
+		return -value
+	}
 }
 
 // isSubsetSum is utility function that returns true if there is a subset of arr[] with sum equal to given sum.
@@ -234,4 +242,42 @@ func FindSetsDynamic(arr []int) (bool, []int, []int) {
 	}
 
 	return true, set1, set2
+}
+
+// findSetsWithMinSumDifference partition array into two sets such that the difference of set sums is minimum. Uses recursive approach.
+func findSetsWithMinSumDifference(arr, set1, set2 []int, sum1, sum2, pos int) ([]int, []int, int) {
+	// If entire array is traversed, return results.
+	if pos == len(arr) {
+		return set1, set2, absInt(sum1 - sum2)
+	}
+
+	// Results if we put current elements to different sets.
+	set11, set21, sumDiff1 := findSetsWithMinSumDifference(arr, append(set1, arr[pos]), set2, sum1+arr[pos], sum2, pos+1)
+	fmt.Printf("1. %v %v %v ", set11, set21, sumDiff1)
+	if absInt(sumInt(set11)-sumInt(set21)) != sumDiff1 {
+		fmt.Print("FAILED\n")
+	} else {
+		fmt.Print("\n")
+	}
+	set12, set22, sumDiff2 := findSetsWithMinSumDifference(arr, set1, append(set2, arr[pos]), sum1, sum2+arr[pos], pos+1)
+	fmt.Printf("2. %v %v %v ", set12, set22, sumDiff2)
+	if absInt(sumInt(set12)-sumInt(set22)) != sumDiff2 {
+		fmt.Print("FAILED\n")
+	} else {
+		fmt.Print("\n")
+	}
+
+	// return minimum of two results.
+	if sumDiff1 < sumDiff2 {
+		return set11, set21, sumDiff1
+	} else {
+		return set12, set22, sumDiff2
+	}
+}
+
+// FindSetsWithMinSumDifferenceRecursive is the wrapper over findSetsWithMinSumDifference.
+func FindSetsWithMinSumDifferenceRecursive(arr []int) ([]int, []int, int) {
+	initialSet1 := make([]int, 0, len(arr))
+	initialSet2 := make([]int, 0, len(arr))
+	return findSetsWithMinSumDifference(arr, initialSet1, initialSet2, 0, 0, 0)
 }
