@@ -123,7 +123,7 @@ func TestFindSetsDynamic(t *testing.T) {
 }
 
 func TestFindSetsWithMinSumDifferenceRecursive(t *testing.T) {
-	arr := []int{3, 1, 4, 2, 2, 1}
+	arr := []int{1, 2, 3}
 	set1, set2, sumDiff := FindSetsWithMinSumDifferenceRecursive(arr)
 	fmt.Println(set1, set2, sumDiff)
 }

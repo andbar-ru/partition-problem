@@ -246,31 +246,38 @@ func FindSetsDynamic(arr []int) (bool, []int, []int) {
 
 // findSetsWithMinSumDifference partition array into two sets such that the difference of set sums is minimum. Uses recursive approach.
 func findSetsWithMinSumDifference(arr, set1, set2 []int, sum1, sum2, pos int) ([]int, []int, int) {
+	fmt.Printf("%v %v %v %v %v\n", set1, set2, sum1, sum2, pos)
 	// If entire array is traversed, return results.
 	if pos == len(arr) {
+		fmt.Printf("pos == len(arr): Return %v %v %v\n", set1, set2, absInt(sum1-sum2))
 		return set1, set2, absInt(sum1 - sum2)
 	}
 
 	// Results if we put current elements to different sets.
+	fmt.Printf("Put %d to set1\n", arr[pos])
 	set11, set21, sumDiff1 := findSetsWithMinSumDifference(arr, append(set1, arr[pos]), set2, sum1+arr[pos], sum2, pos+1)
-	fmt.Printf("1. %v %v %v ", set11, set21, sumDiff1)
+	fmt.Printf("Result 1: %v %v %v ", set11, set21, sumDiff1)
 	if absInt(sumInt(set11)-sumInt(set21)) != sumDiff1 {
-		fmt.Print("FAILED\n")
+		fmt.Print("FAILED\n\n")
 	} else {
-		fmt.Print("\n")
+		fmt.Print("\n\n")
 	}
+
+	fmt.Printf("Put %d to set2\n", arr[pos])
 	set12, set22, sumDiff2 := findSetsWithMinSumDifference(arr, set1, append(set2, arr[pos]), sum1, sum2+arr[pos], pos+1)
-	fmt.Printf("2. %v %v %v ", set12, set22, sumDiff2)
+	fmt.Printf("Result 2: %v %v %v ", set12, set22, sumDiff2)
 	if absInt(sumInt(set12)-sumInt(set22)) != sumDiff2 {
-		fmt.Print("FAILED\n")
+		fmt.Print("FAILED\n\n")
 	} else {
-		fmt.Print("\n")
+		fmt.Print("\n\n")
 	}
 
 	// return minimum of two results.
-	if sumDiff1 < sumDiff2 {
+	if sumDiff1 <= sumDiff2 {
+		fmt.Printf("Result 1 <= Result 2: Return %v %v %v\n", set11, set21, sumDiff1)
 		return set11, set21, sumDiff1
 	} else {
+		fmt.Printf("Result 2 < Result 1: Return %v %v %v\n", set12, set22, sumDiff2)
 		return set12, set22, sumDiff2
 	}
 }
