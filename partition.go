@@ -244,47 +244,61 @@ func FindSetsDynamic(arr []int) (bool, []int, []int) {
 	return true, set1, set2
 }
 
-// findSetsWithMinSumDifference partition array into two sets such that the difference of set sums is minimum. Uses recursive approach.
-func findSetsWithMinSumDifference(arr, set1, set2 []int, sum1, sum2, pos int) ([]int, []int, int) {
-	fmt.Printf("%v %v %v %v %v\n", set1, set2, sum1, sum2, pos)
-	// If entire array is traversed, return results.
-	if pos == len(arr) {
-		fmt.Printf("pos == len(arr): Return %v %v %v\n", set1, set2, absInt(sum1-sum2))
-		return set1, set2, absInt(sum1 - sum2)
-	}
+type setPair struct {
+	set1 []int
+	set2 []int
+}
 
-	// Results if we put current elements to different sets.
-	fmt.Printf("Put %d to set1\n", arr[pos])
-	set11, set21, sumDiff1 := findSetsWithMinSumDifference(arr, append(set1, arr[pos]), set2, sum1+arr[pos], sum2, pos+1)
-	fmt.Printf("Result 1: %v %v %v ", set11, set21, sumDiff1)
-	if absInt(sumInt(set11)-sumInt(set21)) != sumDiff1 {
-		fmt.Print("FAILED\n\n")
-	} else {
-		fmt.Print("\n\n")
-	}
+func (sp *setPair) sumDiff() int {
+	return absInt(sumInt(sp.set1) - sumInt(sp.set2))
+}
 
-	fmt.Printf("Put %d to set2\n", arr[pos])
-	set12, set22, sumDiff2 := findSetsWithMinSumDifference(arr, set1, append(set2, arr[pos]), sum1, sum2+arr[pos], pos+1)
-	fmt.Printf("Result 2: %v %v %v ", set12, set22, sumDiff2)
-	if absInt(sumInt(set12)-sumInt(set22)) != sumDiff2 {
-		fmt.Print("FAILED\n\n")
-	} else {
-		fmt.Print("\n\n")
-	}
-
-	// return minimum of two results.
-	if sumDiff1 <= sumDiff2 {
-		fmt.Printf("Result 1 <= Result 2: Return %v %v %v\n", set11, set21, sumDiff1)
-		return set11, set21, sumDiff1
-	} else {
-		fmt.Printf("Result 2 < Result 1: Return %v %v %v\n", set12, set22, sumDiff2)
-		return set12, set22, sumDiff2
+func getIncrementedSetPair(sp setPair, n, value int) setPair {
+	switch n {
+	case 1:
+		return setPair{append(sp.set1, value), append([]int{}, sp.set2...)}
+	case 2:
+		return setPair{append([]int{}, sp.set1...), append(sp.set2, value)}
+	default:
+		panic(fmt.Sprintf("Wrong n: %d", n))
 	}
 }
 
-// FindSetsWithMinSumDifferenceRecursive is the wrapper over findSetsWithMinSumDifference.
+func getMinSetPair(sp1, sp2 setPair) setPair {
+	if sp1.sumDiff() <= sp2.sumDiff() {
+		return sp1
+	} else {
+		return sp2
+	}
+}
+
+// findMinSetPair partition array into two sets such that the difference of set sums is minimum. Uses recursive approach.
+func findMinSetPair(arr []int, sp setPair, pos int) setPair {
+	// fmt.Printf("%v %v\n", sp, pos)
+	// If entire array is traversed, return result.
+	if pos == len(arr) {
+		// fmt.Printf("pos == len(arr): %v\n", sp)
+		return sp
+	}
+
+	// Results if we put current element to different sets.
+	// fmt.Printf("Put %v to set 1\n", arr[pos])
+	sp1 := findMinSetPair(arr, getIncrementedSetPair(sp, 1, arr[pos]), pos+1)
+	// fmt.Printf("Result 1: %v\n\n", sp1)
+
+	// fmt.Printf("Put %v to set 2\n", arr[pos])
+	sp2 := findMinSetPair(arr, getIncrementedSetPair(sp, 2, arr[pos]), pos+1)
+	// fmt.Printf("Result 2: %v\n\n", sp2)
+
+	result := getMinSetPair(sp1, sp2)
+	// fmt.Printf("Min Result: %v\n\n", result)
+
+	return result
+}
+
+// FindSetsWithMinSumDifferenceRecursive is the wrapper over findMinSetPair.
 func FindSetsWithMinSumDifferenceRecursive(arr []int) ([]int, []int, int) {
-	initialSet1 := make([]int, 0, len(arr))
-	initialSet2 := make([]int, 0, len(arr))
-	return findSetsWithMinSumDifference(arr, initialSet1, initialSet2, 0, 0, 0)
+	initialSetPair := setPair{[]int{}, []int{}}
+	minSetPair := findMinSetPair(arr, initialSetPair, 0)
+	return minSetPair.set1, minSetPair.set2, minSetPair.sumDiff()
 }

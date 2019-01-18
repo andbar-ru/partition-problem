@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"sort"
 	"testing"
 )
 
@@ -122,8 +123,43 @@ func TestFindSetsDynamic(t *testing.T) {
 	testFindSets(t, FindSetsDynamic)
 }
 
+func compareArrayAndSets(t *testing.T, array [arraySize]int, set1, set2 []int) {
+	var sliceFromArray = make([]int, 0, arraySize)
+	var sliceFromSets = make([]int, 0, arraySize)
+
+	sliceFromArray = append(sliceFromArray, array[:]...)
+	sliceFromSets = append(sliceFromSets, set1...)
+	sliceFromSets = append(sliceFromSets, set2...)
+
+	sort.Ints(sliceFromArray)
+	sort.Ints(sliceFromSets)
+
+	for len(sliceFromArray) != len(sliceFromSets) {
+		t.Errorf("Mismatch of lengths of array %v and sets %v and %v: %d != %d + %d\n", array, set1, set2, len(array), len(set1), len(set2))
+	}
+	for i := range sliceFromArray {
+		if sliceFromArray[i] != sliceFromSets[i] {
+			t.Errorf("Mismatch in contents of array %v and sets %v and %v: e.g. %d\n", array, set1, set2, sliceFromArray[i])
+			break
+		}
+	}
+}
+
 func TestFindSetsWithMinSumDifferenceRecursive(t *testing.T) {
-	arr := []int{1, 2, 3}
-	set1, set2, sumDiff := FindSetsWithMinSumDifferenceRecursive(arr)
-	fmt.Println(set1, set2, sumDiff)
+	// set1, set2, sumDiff := FindSetsWithMinSumDifferenceRecursive([]int{1, 2, 3, 4, 10})
+	// fmt.Println(set1, set2, sumDiff)
+
+	results := make(map[int]int)
+
+	for _, array := range arrays {
+		set1, set2, sumDiff := FindSetsWithMinSumDifferenceRecursive(array[:])
+		compareArrayAndSets(t, array, set1, set2)
+		results[sumDiff]++
+
+		if absInt(sumInt(set1)-sumInt(set2)) != sumDiff {
+			t.Errorf("Wrong partition of array %v on %v and %v: abs(%v - %v) != %v", array, set1, set2, sumInt(set1), sumInt(set2), sumDiff)
+		}
+	}
+
+	fmt.Println(results)
 }
