@@ -246,22 +246,13 @@ func FindSetsDynamic(arr []int) (bool, []int, []int) {
 
 type setPair struct {
 	set1 []int
+	sum1 int
 	set2 []int
+	sum2 int
 }
 
 func (sp *setPair) sumDiff() int {
-	return absInt(sumInt(sp.set1) - sumInt(sp.set2))
-}
-
-func getIncrementedSetPair(sp setPair, n, value int) setPair {
-	switch n {
-	case 1:
-		return setPair{append(sp.set1, value), append([]int{}, sp.set2...)}
-	case 2:
-		return setPair{append([]int{}, sp.set1...), append(sp.set2, value)}
-	default:
-		panic(fmt.Sprintf("Wrong n: %d", n))
-	}
+	return absInt(sp.sum1 - sp.sum2)
 }
 
 func getMinSetPair(sp1, sp2 setPair) setPair {
@@ -274,31 +265,57 @@ func getMinSetPair(sp1, sp2 setPair) setPair {
 
 // findMinSetPair partition array into two sets such that the difference of set sums is minimum. Uses recursive approach.
 func findMinSetPair(arr []int, sp setPair, pos int) setPair {
-	// fmt.Printf("%v %v\n", sp, pos)
 	// If entire array is traversed, return result.
 	if pos == len(arr) {
-		// fmt.Printf("pos == len(arr): %v\n", sp)
 		return sp
 	}
 
-	// Results if we put current element to different sets.
-	// fmt.Printf("Put %v to set 1\n", arr[pos])
-	sp1 := findMinSetPair(arr, getIncrementedSetPair(sp, 1, arr[pos]), pos+1)
-	// fmt.Printf("Result 1: %v\n\n", sp1)
-
-	// fmt.Printf("Put %v to set 2\n", arr[pos])
-	sp2 := findMinSetPair(arr, getIncrementedSetPair(sp, 2, arr[pos]), pos+1)
-	// fmt.Printf("Result 2: %v\n\n", sp2)
-
-	result := getMinSetPair(sp1, sp2)
-	// fmt.Printf("Min Result: %v\n\n", result)
-
-	return result
+	// For every item arr[pos] we have two choices:
+	// 1. We include it into the first set;
+	// 2. We include it into the second set.
+	// Return minimum of two results.
+	return getMinSetPair(
+		findMinSetPair(arr, setPair{append(sp.set1, arr[pos]), sp.sum1 + arr[pos], append([]int{}, sp.set2...), sp.sum2}, pos+1),
+		findMinSetPair(arr, setPair{append([]int{}, sp.set1...), sp.sum1, append(sp.set2, arr[pos]), sp.sum2 + arr[pos]}, pos+1),
+	)
 }
 
-// FindSetsWithMinSumDifferenceRecursive is the wrapper over findMinSetPair.
-func FindSetsWithMinSumDifferenceRecursive(arr []int) ([]int, []int, int) {
-	initialSetPair := setPair{[]int{}, []int{}}
-	minSetPair := findMinSetPair(arr, initialSetPair, 0)
+// FindSetsWithMinSumDifference is the wrapper over findMinSetPair.
+func FindSetsWithMinSumDifference(arr []int) ([]int, []int, int) {
+	minSetPair := findMinSetPair(arr, setPair{[]int{}, 0, []int{}, 0}, 0)
 	return minSetPair.set1, minSetPair.set2, minSetPair.sumDiff()
+}
+
+// findMinEqualSetPair partition array into two equal in number sets such the difference of set sumsis minimum. Uses recursive approach.
+func findMinEqualSetPair(arr []int, sp setPair, pos int) setPair {
+	// If size of whether set in setPair is equal the half of arr size, put the rest elements to another set and return result.
+	if len(sp.set1) == len(arr)/2 || len(sp.set2) == len(arr)/2 {
+		if len(sp.set1) == len(arr)/2 {
+			sp.set2 = append(sp.set2, arr[pos:]...)
+			sp.sum2 += sumInt(arr[pos:])
+		} else {
+			sp.set1 = append(sp.set1, arr[pos:]...)
+			sp.sum1 += sumInt(arr[pos:])
+		}
+		return sp
+	}
+
+	// For every item arr[pos] we have two choices:
+	// 1. We include it into the first set;
+	// 2. We include it into the second set.
+	// Return minimum of two results.
+	return getMinSetPair(
+		findMinEqualSetPair(arr, setPair{append(sp.set1, arr[pos]), sp.sum1 + arr[pos], append([]int{}, sp.set2...), sp.sum2}, pos+1),
+		findMinEqualSetPair(arr, setPair{append([]int{}, sp.set1...), sp.sum1, append(sp.set2, arr[pos]), sp.sum2 + arr[pos]}, pos+1),
+	)
+}
+
+// FindEqualSetsWithMinSumDifference is the wrapper over findMinEqualSetPair.
+func FindEqualSetsWithMinSumDifference(arr []int) ([]int, []int, int, error) {
+	// If size of arr is odd, we can't partition it on two equal sets.
+	if len(arr)&1 != 0 {
+		return nil, nil, 0, fmt.Errorf("array size is odd. Can't find equal number sets.\n")
+	}
+	minEqualSetPair := findMinEqualSetPair(arr, setPair{[]int{}, 0, []int{}, 0}, 0)
+	return minEqualSetPair.set1, minEqualSetPair.set2, minEqualSetPair.sumDiff(), nil
 }

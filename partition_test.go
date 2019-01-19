@@ -1,6 +1,7 @@
 package partition
 
 import (
+	"fmt"
 	"math/rand"
 	"os"
 	"sort"
@@ -144,23 +145,54 @@ func compareArrayAndSets(t *testing.T, array [arraySize]int, set1, set2 []int) {
 	}
 }
 
-func TestFindSetsWithMinSumDifferenceRecursive(t *testing.T) {
-	// set1, set2, sumDiff := FindSetsWithMinSumDifferenceRecursive([]int{1, 2, 3, 4, 10})
-	// fmt.Println(set1, set2, sumDiff)
-
+func TestFindSetsWithMinSumDifference(t *testing.T) {
 	results := make(map[int]int)
 
 	for _, array := range arrays {
-		set1, set2, sumDiff := FindSetsWithMinSumDifferenceRecursive(array[:])
+		set1, set2, sumDiff := FindSetsWithMinSumDifference(array[:])
 		compareArrayAndSets(t, array, set1, set2)
 		results[sumDiff]++
 
 		if absInt(sumInt(set1)-sumInt(set2)) != sumDiff {
-			t.Errorf("Wrong partition of array %v on %v and %v: abs(%v - %v) != %v", array, set1, set2, sumInt(set1), sumInt(set2), sumDiff)
+			t.Errorf("Wrong partition of array %v on %v and %v: abs(%v - %v) != %v\n", array, set1, set2, sumInt(set1), sumInt(set2), sumDiff)
 		}
 	}
 
-	if results[0] != 502 || results[1] != 493 || results[2] != 3 || results[3] != 1 || results[4] != 1 {
-		t.Errorf("Wrong results: expected map[0:502 1:493 2:3 3:1 4:1], got %v", results)
+	validResults := map[int]int{0: 502, 1: 493, 2: 3, 3: 1, 4: 1}
+	for k, v := range results {
+		if validResults[k] != v {
+			t.Errorf("Wrong results: expected map[0:502 1:493 2:3 3:1 4:1], got %v\n", results)
+			break
+		}
 	}
+	fmt.Println(results)
+}
+
+func TestFindEqualSetsWithMinSumDifference(t *testing.T) {
+	results := make(map[int]int)
+
+	for _, array := range arrays {
+		set1, set2, sumDiff, err := FindEqualSetsWithMinSumDifference(array[:])
+		if err != nil {
+			t.Errorf("array %v: %v", array, err)
+		}
+		if len(set1) != len(set2) {
+			t.Errorf("Sizes of sets %v and %v are not equal: %d != %d\n", set1, set2, len(set1), len(set2))
+		}
+		compareArrayAndSets(t, array, set1, set2)
+		results[sumDiff]++
+
+		if absInt(sumInt(set1)-sumInt(set2)) != sumDiff {
+			t.Errorf("Wrong partition of array %v on %v and %v: abs(%v - %v) != %v\n", array, set1, set2, sumInt(set1), sumInt(set2), sumDiff)
+		}
+	}
+
+	validResults := map[int]int{0: 476, 1: 490, 2: 27, 3: 4, 4: 1, 6: 1, 18: 1}
+	for k, v := range results {
+		if validResults[k] != v {
+			t.Errorf("Wrong results: expected map[0:502 1:493 2:3 3:1 4:1], got %v\n", results)
+			break
+		}
+	}
+	fmt.Println(results)
 }
