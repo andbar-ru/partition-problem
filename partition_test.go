@@ -1,7 +1,6 @@
 package partition
 
 import (
-	"fmt"
 	"math/rand"
 	"os"
 	"sort"
@@ -161,5 +160,7 @@ func TestFindSetsWithMinSumDifferenceRecursive(t *testing.T) {
 		}
 	}
 
-	fmt.Println(results)
+	if results[0] != 502 || results[1] != 493 || results[2] != 3 || results[3] != 1 || results[4] != 1 {
+		t.Errorf("Wrong results: expected map[0:502 1:493 2:3 3:1 4:1], got %v", results)
+	}
 }
