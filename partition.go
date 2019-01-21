@@ -7,11 +7,20 @@ package partition
 
 import (
 	"fmt"
+	"math"
 	"sort"
 )
 
 func sumInt(arr []int) int {
 	var sum int
+	for _, val := range arr {
+		sum += val
+	}
+	return sum
+}
+
+func sumFloat(arr []float64) float64 {
+	var sum float64
 	for _, val := range arr {
 		sum += val
 	}
@@ -255,7 +264,26 @@ func (sp *setPair) sumDiff() int {
 	return absInt(sp.sum1 - sp.sum2)
 }
 
+type setPairFloat struct {
+	set1 []float64
+	sum1 float64
+	set2 []float64
+	sum2 float64
+}
+
+func (spf *setPairFloat) sumDiff() float64 {
+	return math.Abs(spf.sum1 - spf.sum2)
+}
+
 func getMinSetPair(sp1, sp2 setPair) setPair {
+	if sp1.sumDiff() <= sp2.sumDiff() {
+		return sp1
+	} else {
+		return sp2
+	}
+}
+
+func getMinSetPairFloat(sp1, sp2 setPairFloat) setPairFloat {
 	if sp1.sumDiff() <= sp2.sumDiff() {
 		return sp1
 	} else {
@@ -317,5 +345,39 @@ func FindEqualSetsWithMinSumDifference(arr []int) ([]int, []int, int, error) {
 		return nil, nil, 0, fmt.Errorf("array size is odd. Can't find equal number sets.\n")
 	}
 	minEqualSetPair := findMinEqualSetPair(arr, setPair{[]int{}, 0, []int{}, 0}, 0)
+	return minEqualSetPair.set1, minEqualSetPair.set2, minEqualSetPair.sumDiff(), nil
+}
+
+// findMinEqualSetPairFloat partition array into two equal in number sets such the difference of set sums is minimum. Uses recursive approach.
+func findMinEqualSetPairFloat(arr []float64, sp setPairFloat, pos int) setPairFloat {
+	// If size of whether set in setPair is equal the half of arr size, put the rest elements to another set and return result.
+	if len(sp.set1) == len(arr)/2 || len(sp.set2) == len(arr)/2 {
+		if len(sp.set1) == len(arr)/2 {
+			sp.set2 = append(sp.set2, arr[pos:]...)
+			sp.sum2 += sumFloat(arr[pos:])
+		} else {
+			sp.set1 = append(sp.set1, arr[pos:]...)
+			sp.sum1 += sumFloat(arr[pos:])
+		}
+		return sp
+	}
+
+	// For every item arr[pos] we have two choices:
+	// 1. We include it into the first set;
+	// 2. We include it into the second set.
+	// Return minimum of two results.
+	return getMinSetPairFloat(
+		findMinEqualSetPairFloat(arr, setPairFloat{append(sp.set1, arr[pos]), sp.sum1 + arr[pos], append([]float64{}, sp.set2...), sp.sum2}, pos+1),
+		findMinEqualSetPairFloat(arr, setPairFloat{append([]float64{}, sp.set1...), sp.sum1, append(sp.set2, arr[pos]), sp.sum2 + arr[pos]}, pos+1),
+	)
+}
+
+// FindEqualSetsWithMinSumDifferenceFloat is the wrapper over findMinEqualSetPairFloat.
+func FindEqualSetsWithMinSumDifferenceFloat(arr []float64) ([]float64, []float64, float64, error) {
+	// If size of arr is odd, we can't partition it on two equal sets.
+	if len(arr)&1 != 0 {
+		return nil, nil, 0, fmt.Errorf("array size is odd. Can't find equal number sets.\n")
+	}
+	minEqualSetPair := findMinEqualSetPairFloat(arr, setPairFloat{[]float64{}, 0, []float64{}, 0}, 0)
 	return minEqualSetPair.set1, minEqualSetPair.set2, minEqualSetPair.sumDiff(), nil
 }

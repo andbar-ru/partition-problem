@@ -2,6 +2,7 @@ package partition
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"os"
 	"sort"
@@ -145,6 +146,28 @@ func compareArrayAndSets(t *testing.T, array [arraySize]int, set1, set2 []int) {
 	}
 }
 
+func compareArrayAndSetsFloat(t *testing.T, array [arraySize]float64, set1, set2 []float64) {
+	var sliceFromArray = make([]float64, 0, arraySize)
+	var sliceFromSets = make([]float64, 0, arraySize)
+
+	sliceFromArray = append(sliceFromArray, array[:]...)
+	sliceFromSets = append(sliceFromSets, set1...)
+	sliceFromSets = append(sliceFromSets, set2...)
+
+	sort.Float64s(sliceFromArray)
+	sort.Float64s(sliceFromSets)
+
+	for len(sliceFromArray) != len(sliceFromSets) {
+		t.Errorf("Mismatch of lengths of array %v and sets %v and %v: %d != %d + %d\n", array, set1, set2, len(array), len(set1), len(set2))
+	}
+	for i := range sliceFromArray {
+		if sliceFromArray[i] != sliceFromSets[i] {
+			t.Errorf("Mismatch in contents of array %v and sets %v and %v: e.g. %f\n", array, set1, set2, sliceFromArray[i])
+			break
+		}
+	}
+}
+
 func TestFindSetsWithMinSumDifference(t *testing.T) {
 	results := make(map[int]int)
 
@@ -195,4 +218,38 @@ func TestFindEqualSetsWithMinSumDifference(t *testing.T) {
 		}
 	}
 	fmt.Println(results)
+}
+
+func TestFindEqualSetsWithMinSumDifferenceFloat(t *testing.T) {
+	// Build arrays with float numbers.
+	var arrays [arraysNumber][arraySize]float64
+	rand.Seed(seed)
+	for i, array := range arrays {
+		for j := range array {
+			array[j] = rand.Float64()
+		}
+		arrays[i] = array
+	}
+
+	results := make([]float64, 0, arraysNumber)
+
+	for _, array := range arrays {
+		set1, set2, sumDiff, err := FindEqualSetsWithMinSumDifferenceFloat(array[:])
+		if err != nil {
+			t.Errorf("array %v: %v", array, err)
+		}
+		if len(set1) != len(set2) {
+			t.Errorf("Sizes of sets %v and %v are not equal: %d != %d\n", set1, set2, len(set1), len(set2))
+		}
+		compareArrayAndSetsFloat(t, array, set1, set2)
+		results = append(results, sumDiff)
+
+		floatError := math.Abs(sumFloat(set1)-sumFloat(set2)) - sumDiff
+		diff := math.Round(floatError*1e14) / 1e14
+		if diff != 0 {
+			t.Errorf("Wrong partition of array %v on %v and %v: abs(%v - %v) - %v != 0 (%v)\n", array, set1, set2, sumFloat(set1), sumFloat(set2), sumDiff, diff)
+		}
+	}
+	sort.Float64s(results)
+	fmt.Printf("sumDiffs from %v to %v\n", results[0], results[len(results)-1])
 }
